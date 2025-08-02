@@ -113,6 +113,3 @@ if st.session_state.stage == 1:
         if st.button("Evet", key="evet_button_buyuk"):
             st.session_state.stage = 2
             st.experimental_rerun()
-    
-    # Sticker (ilk ekran - başını sallayan)
-    st.markdown(get_sticker_html("
