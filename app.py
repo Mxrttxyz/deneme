@@ -78,4 +78,41 @@ def get_button_style(hayir_sayaci):
 # Sticker'ların HTML ve CSS'i
 def get_sticker_html(url):
     return f"""
-    <div style="text-
+    <div style="text-align: center; margin: 2rem 0;">
+        <img src="{url}" alt="sticker" width="300px">
+    </div>
+    """
+
+# --- Uygulama Aşamaları ---
+
+# AŞAMA 1: Özür dileme ve 'Evet/Hayır' butonları
+if st.session_state.stage == 1:
+    
+    st.markdown("<h1 style='text-align: center; font-size: 3rem; color: #E06666;'>Seni Üzdüğüm İçin Özür Dilerim. Barışalım Mı?</h1>", unsafe_allow_html=True)
+    
+    st.markdown(get_button_style(st.session_state.hayir_sayaci), unsafe_allow_html=True)
+
+    # Butonlar
+    col1, col2, col3 = st.columns([1,1.5,1])
+    
+    with col1:
+        if st.session_state.hayir_sayaci < 7: # Ekranı kaplayan butondan önce
+            if st.button("Evet", key="evet_button_kucuk"):
+                st.session_state.stage = 2
+                st.experimental_rerun()
+    
+    with col3:
+        if st.session_state.hayir_sayaci < len(hayir_yazilari):
+            hayir_metni = hayir_yazilari[st.session_state.hayir_sayaci]
+            if st.button(hayir_metni, key="hayir_button"):
+                st.session_state.hayir_sayaci += 1
+                st.experimental_rerun()
+    
+    # Tüm ekranı kaplayan Evet butonu
+    if st.session_state.hayir_sayaci >= 7:
+        if st.button("Evet", key="evet_button_buyuk"):
+            st.session_state.stage = 2
+            st.experimental_rerun()
+    
+    # Sticker (ilk ekran - başını sallayan)
+    st.markdown(get_sticker_html("
