@@ -23,57 +23,48 @@ hayir_yazilari = [
 
 # Butonların HTML ve CSS'i
 def get_button_style(hayir_sayaci):
-    # 'Evet' butonunun büyüme miktarı
     buyume_orani = 1.0 + (hayir_sayaci * 0.4)
-    
-    # 'Hayır' butonu için renkler
     hayir_bg_color = "#E06666" if hayir_sayaci < 7 else "#CD5C5C"
-    
-    # Büyüyen Evet butonu stili
-    evet_style = f"""
-        .stButton button[key="evet_button_kucuk"] {{
-            font-size: {buyume_orani * 1.5}rem !important;
-            padding: {buyume_orani * 0.5}rem {buyume_orani * 1}rem !important;
-            background-color: #5CB85C !important;
-            color: white !important;
-            border-radius: 10px !important;
-            border: 2px solid #5CB85C !important;
-            transition: all 0.3s ease-in-out;
-        }}
+
+    # CSS stillerini tek bir dize olarak tanımla
+    style_str = f"""
+    <style>
+    .stButton button[key="evet_button_kucuk"] {{
+        font-size: {buyume_orani * 1.5}rem !important;
+        padding: {buyume_orani * 0.5}rem {buyume_orani * 1}rem !important;
+        background-color: #5CB85C !important;
+        color: white !important;
+        border-radius: 10px !important;
+        border: 2px solid #5CB85C !important;
+        transition: all 0.3s ease-in-out;
+    }}
+    .stButton button[key="hayir_button"] {{
+        font-size: 1.5rem !important;
+        padding: 0.5rem 1rem !important;
+        background-color: {hayir_bg_color} !important;
+        color: white !important;
+        border-radius: 10px !important;
+        border: 2px solid {hayir_bg_color} !important;
+        transition: all 0.3s ease-in-out;
+    }}
+    .stButton button[key="evet_button_buyuk"] {{
+        font-size: 10rem !important;
+        padding: 5rem 10rem !important;
+        background-color: #5CB85C !important;
+        color: white !important;
+        border-radius: 20px !important;
+        border: 2px solid #5CB85C !important;
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 9999 !important;
+    }}
+    </style>
     """
-    
-    # Hayır butonu stili
-    hayir_style = f"""
-        .stButton button[key="hayir_button"] {{
-            font-size: 1.5rem !important;
-            padding: 0.5rem 1rem !important;
-            background-color: {hayir_bg_color} !important;
-            color: white !important;
-            border-radius: 10px !important;
-            border: 2px solid {hayir_bg_color} !important;
-            transition: all 0.3s ease-in-out;
-        }}
-    """
-    
-    # Tüm ekranı kaplayan Evet butonu stili
-    buyuk_evet_style = """
-        .stButton button[key="evet_button_buyuk"] {
-            font-size: 10rem !important;
-            padding: 5rem 10rem !important;
-            background-color: #5CB85C !important;
-            color: white !important;
-            border-radius: 20px !important;
-            border: 2px solid #5CB85C !important;
-            position: fixed !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 9999 !important;
-        }
-    """
-    return f"<style>{evet_style}{hayir_style}{buyuk_evet_style}</style>"
+    return style_str
 
 # Sticker'ların HTML ve CSS'i
 def get_sticker_html(url):
@@ -96,20 +87,4 @@ if st.session_state.stage == 1:
     col1, col2, col3 = st.columns([1,1.5,1])
     
     with col1:
-        if st.session_state.hayir_sayaci < 7: # Ekranı kaplayan butondan önce
-            if st.button("Evet", key="evet_button_kucuk"):
-                st.session_state.stage = 2
-                st.experimental_rerun()
-    
-    with col3:
-        if st.session_state.hayir_sayaci < len(hayir_yazilari):
-            hayir_metni = hayir_yazilari[st.session_state.hayir_sayaci]
-            if st.button(hayir_metni, key="hayir_button"):
-                st.session_state.hayir_sayaci += 1
-                st.experimental_rerun()
-    
-    # Tüm ekranı kaplayan Evet butonu
-    if st.session_state.hayir_sayaci >= 7:
-        if st.button("Evet", key="evet_button_buyuk"):
-            st.session_state.stage = 2
-            st.experimental_rerun()
+        if st.session_state.hayir_sayaci < 7:
