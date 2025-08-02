@@ -23,10 +23,13 @@ hayir_yazilari = [
 
 # Butonların HTML ve CSS'i
 def get_button_style(hayir_sayaci):
+    # 'Evet' butonunun büyüme miktarı
     buyume_orani = 1.0 + (hayir_sayaci * 0.4)
+    
+    # 'Hayır' butonu için renkler
     hayir_bg_color = "#E06666" if hayir_sayaci < 7 else "#CD5C5C"
-
-    # CSS stillerini tek bir dize olarak tanımla
+    
+    # Tüm CSS'i tek bir stil bloğu içinde birleştiriyoruz
     style_str = f"""
     <style>
     .stButton button[key="evet_button_kucuk"] {{
@@ -83,8 +86,37 @@ if st.session_state.stage == 1:
     
     st.markdown(get_button_style(st.session_state.hayir_sayaci), unsafe_allow_html=True)
 
-    # Butonlar
+    # Butonları yerleştirme
     col1, col2, col3 = st.columns([1,1.5,1])
     
     with col1:
-        if st.session_state.hayir_sayaci < 7:
+        # Evet butonu normal boyutundayken
+        if st.session_state.hayir_sayaci < 7: 
+            if st.button("Evet", key="evet_button_kucuk"):
+                st.session_state.stage = 2
+                st.experimental_rerun()
+    
+    with col3:
+        # Hayır butonu
+        if st.session_state.hayir_sayaci < len(hayir_yazilari):
+            hayir_metni = hayir_yazilari[st.session_state.hayir_sayaci]
+            if st.button(hayir_metni, key="hayir_button"):
+                st.session_state.hayir_sayaci += 1
+                st.experimental_rerun()
+    
+    # Hayır'a yeterince basınca çıkan, tüm ekranı kaplayan Evet butonu
+    if st.session_state.hayir_sayaci >= 7:
+        if st.button("Evet", key="evet_button_buyuk"):
+            st.session_state.stage = 2
+            st.experimental_rerun()
+    
+    # Sticker (ilk ekran - başını sallayan)
+    st.markdown(get_sticker_html("https://media.giphy.com/media/QvTz5Y1K4b30l67m5C/giphy.gif"), unsafe_allow_html=True)
+
+# AŞAMA 2: Affedildiğini gösteren ekran
+elif st.session_state.stage == 2:
+    st.markdown("<h1 style='text-align: center; font-size: 3rem; color: #E06666;'>Evet diyeceğini biliyordummm!</h1>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; font-size: 2.5rem; color: #E06666;'>Teşekkür Ederimm ❤️</h2>", unsafe_allow_html=True)
+    
+    # Sticker (ikinci ekran - sarılma)
+    st.markdown(get_sticker_html("https://media.giphy.com/media/jY5xK2D6s0uF9lWzVl/giphy.gif"), unsafe_allow_html=True)
