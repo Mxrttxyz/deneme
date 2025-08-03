@@ -61,6 +61,7 @@
     </div>
 
     <script>
+        // DOM elemanlarını seçme
         const baslatButonu = document.getElementById('baslat-butonu');
         const baslangicEkrani = document.getElementById('baslangic-ekrani');
         const dogrulamaEkrani = document.getElementById('dogrulama-ekrani');
@@ -68,6 +69,7 @@
         const logAkisi = document.getElementById('log-akisi');
         const sonucIcerik = document.getElementById('sonuc-icerik');
 
+        // Log mesajları dizisi
         const logMesajlari = [
             "Güvenlik sertifikaları kontrol ediliyor... [OK]",
             "Güvenlik duvarı parametreleri taranıyor... [OK]",
@@ -79,14 +81,44 @@
             "Doğrulama tamamlandı... [OK]"
         ];
 
-        let logIndex = 0;
-        let progress = 0;
-        let intervalId;
+        // Butona tıklandığında çalışacak olay dinleyicisi
+        baslatButonu.addEventListener('click', () => {
+            // Başlangıç ekranını yavaşça gizle
+            baslangicEkrani.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                baslangicEkrani.classList.add('hidden');
+                dogrulamaEkrani.classList.remove('hidden');
+                
+                // Doğrulama ekranını yavaşça göster
+                setTimeout(() => {
+                    dogrulamaEkrani.classList.add('opacity-100');
+                    startProgressSimulation(); // Yükleme işlemini başlat
+                }, 50);
+            }, 1000);
+        });
 
-        function updateProgress() {
-            if (progress < 100) {
+        // Yükleme simülasyonunu başlatan fonksiyon
+        function startProgressSimulation() {
+            let logIndex = 0;
+            let progress = 0;
+            
+            // Animasyon için setInterval kullanıyoruz, bu daha güvenilir
+            const intervalId = setInterval(() => {
+                // İlerleme çubuğunu rastgele artır
                 progress += Math.floor(Math.random() * 5) + 5;
-                if (progress > 100) progress = 100;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(intervalId); // Yükleme bitince animasyonu durdur
+                    
+                    // Sonucu göstermeden önce 1.5 saniye bekle
+                    setTimeout(() => {
+                        sonucIcerik.classList.remove('hidden');
+                        sonucIcerik.classList.add('animate-fadeIn');
+                    }, 1500);
+                }
+
+                // İlerleme çubuğunu güncelle
                 progressBar.style.width = `${progress}%`;
                 
                 // Belirli aralıklarla yeni log mesajı ekle
@@ -97,30 +129,8 @@
                     logAkisi.scrollTop = logAkisi.scrollHeight; // En alta kaydır
                     logIndex++;
                 }
-
-                if (progress < 100) {
-                    setTimeout(updateProgress, 200);
-                } else {
-                    clearInterval(intervalId);
-                    setTimeout(() => {
-                        sonucIcerik.classList.remove('hidden');
-                        sonucIcerik.classList.add('animate-fadeIn');
-                    }, 1500); // Sonucu göstermeden önce 1.5 saniye bekle
-                }
-            }
+            }, 200); // Her 200 milisaniyede bir çalışır
         }
-
-        baslatButonu.addEventListener('click', () => {
-            baslangicEkrani.classList.add('opacity-0');
-            setTimeout(() => {
-                baslangicEkrani.classList.add('hidden');
-                dogrulamaEkrani.classList.remove('hidden');
-                setTimeout(() => {
-                    dogrulamaEkrani.classList.add('opacity-100');
-                    updateProgress(); // Yükleme işlemini başlat
-                }, 50);
-            }, 1000);
-        });
     </script>
 </body>
 </html>
