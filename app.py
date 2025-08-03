@@ -1,122 +1,126 @@
-import streamlit as st
-
-# Sayfa ayarları
-st.set_page_config(page_title="Özür Dilerim", layout="wide")
-
-# Session state'i başlat
-if 'hayir_sayaci' not in st.session_state:
-    st.session_state.hayir_sayaci = 0
-if 'stage' not in st.session_state:
-    st.session_state.stage = 1
-
-# "Hayır" butonunun değişen yazıları
-hayir_yazilari = [
-    "Hayır",
-    "Emin misin?",
-    "Gerçekten emin misin??",
-    "Tam olarak emin olduğunu söyleyebilir misin?",
-    "Bir daha düşün lütfen!",
-    "Gerçekten çok özülürüm...",
-    "Çok ama çok özülürüm...",
-    "Peki tamam, artık sormayacağım...",
-]
-
-# Butonların HTML ve CSS'i
-def get_button_style(hayir_sayaci):
-    # 'Evet' butonunun büyüme miktarı
-    buyume_orani = 1.0 + (hayir_sayaci * 0.4)
-    
-    # 'Hayır' butonu için renkler
-    hayir_bg_color = "#E06666" if hayir_sayaci < 7 else "#CD5C5C"
-    
-    # Tüm CSS'i tek bir stil bloğu içinde birleştiriyoruz
-    style_str = f"""
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Adresi Doğrulama Hizmeti</title>
+    <!-- Tailwind CSS'i CDN üzerinden dahil ediyoruz -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome ikonlarını ekliyoruz -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-    .stButton button[key="evet_button_kucuk"] {{
-        font-size: {buyume_orani * 1.5}rem !important;
-        padding: {buyume_orani * 0.5}rem {buyume_orani * 1}rem !important;
-        background-color: #5CB85C !important;
-        color: white !important;
-        border-radius: 10px !important;
-        border: 2px solid #5CB85C !important;
-        transition: all 0.3s ease-in-out;
-    }}
-    .stButton button[key="hayir_button"] {{
-        font-size: 1.5rem !important;
-        padding: 0.5rem 1rem !important;
-        background-color: {hayir_bg_color} !important;
-        color: white !important;
-        border-radius: 10px !important;
-        border: 2px solid {hayir_bg_color} !important;
-        transition: all 0.3s ease-in-out;
-    }}
-    .stButton button[key="evet_button_buyuk"] {{
-        font-size: 10rem !important;
-        padding: 5rem 10rem !important;
-        background-color: #5CB85C !important;
-        color: white !important;
-        border-radius: 20px !important;
-        border: 2px solid #5CB85C !important;
-        position: fixed !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        z-index: 9999 !important;
-    }}
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Koyu arka plan */
+        }
     </style>
-    """
-    return style_str
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+    <div class="container mx-auto p-4 md:p-8">
+        <!-- İlk Ekran: Başlangıç ve Buton -->
+        <div id="baslangic-ekrani" class="text-center transition-opacity duration-1000 ease-in-out">
+            <h1 class="text-3xl md:text-5xl font-bold mb-4 text-white">IP Adresi Doğrulama Servisi</h1>
+            <p class="text-md md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                Sisteminizin güvenliğini sağlamak için IP adresinizi doğrulayın. Bu işlem, hesabınızı korumak için gereklidir.
+            </p>
+            <button id="baslat-butonu" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105">
+                <i class="fa-solid fa-shield-halved mr-2"></i> Doğrulamayı Başlat
+            </button>
+        </div>
 
-# Sticker'ların HTML ve CSS'i
-def get_sticker_html(url):
-    return f"""
-    <div style="text-align: center; margin: 2rem 0;">
-        <img src="{url}" alt="sticker" width="300px">
+        <!-- İkinci Ekran: Yükleme ve Sonuç -->
+        <div id="dogrulama-ekrani" class="hidden opacity-0 text-center transition-opacity duration-1000 ease-in-out">
+            <h2 class="text-2xl md:text-4xl font-bold mb-6 text-yellow-400 animate-pulse">IP Doğrulama İşlemi Başlatıldı...</h2>
+            
+            <!-- Yükleme Çubuğu -->
+            <div class="w-full max-w-2xl mx-auto bg-gray-700 rounded-full h-4 mb-4">
+                <div id="progress-bar" class="bg-yellow-500 h-4 rounded-full transition-all duration-500 ease-in-out" style="width: 0%;"></div>
+            </div>
+            
+            <!-- Log Akışı -->
+            <div id="log-akisi" class="text-left bg-gray-800 p-4 rounded-lg h-64 overflow-y-scroll font-mono text-sm text-gray-400 max-w-2xl mx-auto">
+                <p>> Bağlantı kuruluyor... <span class="text-green-500">[OK]</span></p>
+                <p>> IP adresi tespiti: 192.168.1.1 <span class="text-green-500">[OK]</span></p>
+            </div>
+
+            <!-- Şaka Sonucu -->
+            <div id="sonuc-icerik" class="hidden text-center mt-8">
+                <h3 class="text-4xl md:text-6xl font-bold mb-4 text-green-500">Tebrikler!</h3>
+                <p class="text-xl md:text-2xl mb-8 text-white">
+                    IP adresin başarıyla doğrulandı. yaramı ye şimdi jqwhejqwheqh
+                </p>
+                <img
+                    src="https://media.giphy.com/media/l4pTfx2qLsQakm0MM/giphy.gif"
+                    alt="Komik kedi gif"
+                    class="mx-auto rounded-lg shadow-xl"
+                    onerror="this.src='https://placehold.co/480x270/2d2d2d/ffffff?text=Resim+Yüklenemedi'"
+                />
+            </div>
+        </div>
     </div>
-    """
 
-# --- Uygulama Aşamaları ---
+    <script>
+        const baslatButonu = document.getElementById('baslat-butonu');
+        const baslangicEkrani = document.getElementById('baslangic-ekrani');
+        const dogrulamaEkrani = document.getElementById('dogrulama-ekrani');
+        const progressBar = document.getElementById('progress-bar');
+        const logAkisi = document.getElementById('log-akisi');
+        const sonucIcerik = document.getElementById('sonuc-icerik');
 
-# AŞAMA 1: Özür dileme ve 'Evet/Hayır' butonları
-if st.session_state.stage == 1:
-    
-    st.markdown("<h1 style='text-align: center; font-size: 3rem; color: #E06666;'>Seni Üzdüğüm İçin Özür Dilerim. Barışalım Mı?</h1>", unsafe_allow_html=True)
-    
-    st.markdown(get_button_style(st.session_state.hayir_sayaci), unsafe_allow_html=True)
+        const logMesajlari = [
+            "Güvenlik sertifikaları kontrol ediliyor... [OK]",
+            "Güvenlik duvarı parametreleri taranıyor... [OK]",
+            "Kötü amaçlı yazılım imzaları güncelleniyor... [OK]",
+            "Veri paketleri analiz ediliyor... [OK]",
+            "Bağlantı noktası protokolleri kontrol ediliyor... [OK]",
+            "Sistem güvenlik puanı hesaplanıyor... [OK]",
+            "Sonuçlar hazırlanıyor... [OK]",
+            "Doğrulama tamamlandı... [OK]"
+        ];
 
-    # Butonları yerleştirme
-    col1, col2, col3 = st.columns([1,1.5,1])
-    
-    with col1:
-        # Evet butonu normal boyutundayken
-        if st.session_state.hayir_sayaci < 7: 
-            if st.button("Evet", key="evet_button_kucuk"):
-                st.session_state.stage = 2
-                st.experimental_rerun()
-    
-    with col3:
-        # Hayır butonu
-        if st.session_state.hayir_sayaci < len(hayir_yazilari):
-            hayir_metni = hayir_yazilari[st.session_state.hayir_sayaci]
-            if st.button(hayir_metni, key="hayir_button"):
-                st.session_state.hayir_sayaci += 1
-                st.experimental_rerun()
-    
-    # Hayır'a yeterince basınca çıkan, tüm ekranı kaplayan Evet butonu
-    if st.session_state.hayir_sayaci >= 7:
-        if st.button("Evet", key="evet_button_buyuk"):
-            st.session_state.stage = 2
-            st.experimental_rerun()
-    
-    # Sticker (ilk ekran - başını sallayan)
-    st.markdown(get_sticker_html("https://media.giphy.com/media/QvTz5Y1K4b30l67m5C/giphy.gif"), unsafe_allow_html=True)
+        let logIndex = 0;
+        let progress = 0;
+        let intervalId;
 
-# AŞAMA 2: Affedildiğini gösteren ekran
-elif st.session_state.stage == 2:
-    st.markdown("<h1 style='text-align: center; font-size: 3rem; color: #E06666;'>Evet diyeceğini biliyordummm!</h1>", unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align: center; font-size: 2.5rem; color: #E06666;'>Teşekkür Ederimm ❤️</h2>", unsafe_allow_html=True)
-    
-    # Sticker (ikinci ekran - sarılma)
-    st.markdown(get_sticker_html("https://media.giphy.com/media/jY5xK2D6s0uF9lWzVl/giphy.gif"), unsafe_allow_html=True)
+        function updateProgress() {
+            if (progress < 100) {
+                progress += Math.floor(Math.random() * 5) + 5;
+                if (progress > 100) progress = 100;
+                progressBar.style.width = `${progress}%`;
+                
+                // Belirli aralıklarla yeni log mesajı ekle
+                if (logIndex < logMesajlari.length && progress > (logIndex * (100 / logMesajlari.length))) {
+                    const yeniLog = document.createElement('p');
+                    yeniLog.textContent = `> ${logMesajlari[logIndex]}`;
+                    logAkisi.appendChild(yeniLog);
+                    logAkisi.scrollTop = logAkisi.scrollHeight; // En alta kaydır
+                    logIndex++;
+                }
+
+                if (progress < 100) {
+                    setTimeout(updateProgress, 200);
+                } else {
+                    clearInterval(intervalId);
+                    setTimeout(() => {
+                        sonucIcerik.classList.remove('hidden');
+                        sonucIcerik.classList.add('animate-fadeIn');
+                    }, 1500); // Sonucu göstermeden önce 1.5 saniye bekle
+                }
+            }
+        }
+
+        baslatButonu.addEventListener('click', () => {
+            baslangicEkrani.classList.add('opacity-0');
+            setTimeout(() => {
+                baslangicEkrani.classList.add('hidden');
+                dogrulamaEkrani.classList.remove('hidden');
+                setTimeout(() => {
+                    dogrulamaEkrani.classList.add('opacity-100');
+                    updateProgress(); // Yükleme işlemini başlat
+                }, 50);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
